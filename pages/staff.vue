@@ -1,35 +1,36 @@
 <template>
   <v-app>
     <v-container>
+      <v-icon>mdi-account-multiple</v-icon> &nbsp; Staffs / Teachers
 
+      <v-spacer />
 
       <!-- Staff List -->
       <v-card flat>
         <v-card-title class="d-flex align-center pe-2">
-          <v-icon>mdi-account-multiple</v-icon> &nbsp; Staffs / Teachers
-
+          <!-- New Item Button -->
+          <v-btn class="mb-2" color="primary" dark @click="openInsertDialog">
+            +Add
+          </v-btn>
           <v-spacer />
-
           <v-text-field v-model="search" density="compact" label="Search" prepend-inner-icon="mdi-magnify"
             variant="solo-filled" flat hide-details single-line />
-
         </v-card-title>
-
-        <!-- New Item Button -->
-        <v-btn class="mb-2" color="primary" dark @click="openInsertDialog">
-          +Add
-        </v-btn>
 
         <!-- Insert Dialog -->
         <v-dialog v-model="insertDialog" max-width="600px">
           <v-card>
-            <v-card-title>New Staff</v-card-title>
+            <v-card-title>New Staff Application Form</v-card-title>
             <v-card-text>
-              <v-text-field v-model="newStaff.name" label="Name"></v-text-field>
-              <v-text-field v-model="newStaff.gender" label="Gender"></v-text-field>
-              <v-text-field v-model="newStaff.contact_mobile" label="Contact"></v-text-field>
-              <v-text-field v-model="newStaff.subjects_taught" label="Subjects Taught"></v-text-field>
-              <v-text-field v-model="newStaff.classes_taught" label="Classes Taught"></v-text-field>
+              <v-text-field v-model="newStaff.name" label="Name" />
+              <v-select v-model="newStaff.gender" label="Gender" hint="Enter your sex" :items="genderLookUp"
+                persistent-hint />
+              <v-text-field v-model="newStaff.contact_mobile" label="Contact" />
+              <v-autocomplete color="white" hide-no-data hide-selected v-model="newStaff.subjects_taught"
+                :items="subjectLookups" hint="Pick the subjects you teach" label="Subject Taught" multiple
+                persistent-hint />
+              <v-select v-model="newStaff.classes_taught" :items="classLookups" hint="Pick the classes you teach"
+                label="Classes Taught" multiple persistent-hint />
             </v-card-text>
             <v-card-actions>
               <v-btn color="blue-darken-1" text @click="insertDialog = false">Cancel</v-btn>
@@ -38,37 +39,34 @@
           </v-card>
         </v-dialog>
 
-        <suspense v-on:fallback="{ VSkeletonLoader }">
-          <v-data-table v-model:search="search" :headers="headers" :items="items" item-key="id"
-            :items-per-page-options="paginationOptions" :items-per-page="itemsPerPage"
-            :sort-by="[{ key: 'classesTaught', order: 'asc' }]">
 
+        <!-- Data Table -->
+        <v-data-table v-model:search="search" :headers="headers" :items="items" :search="search"
+          :items-per-page="itemsPerPage">
+          <template #item.actions="{ item }">
+            <v-icon class="me-2" size="small" @click="openEditDialog(item)">
+              mdi-pencil
+            </v-icon>
+            <v-icon size="small" @click="openDeleteDialog(item)">
+              mdi-delete
+            </v-icon>
+          </template>
 
+          <template #no-data>
+            <v-btn color="primary" @click="fetchStaffs"> Reset </v-btn>
+          </template>
+        </v-data-table>
 
-            <template #item.actions="{ item }">
-              <v-icon class="me-2" size="small" @click="openEditDialog(item)">
-                mdi-pencil
-              </v-icon>
-              <v-icon size="small" @click="openDeleteDialog(item)">
-                mdi-delete
-              </v-icon>
-            </template>
-
-            <template #no-data>
-              <v-btn color="primary" @click="fetchStaffs"> Reset </v-btn>
-            </template>
-          </v-data-table>
-        </suspense>
-        <!-- Edit/Delete Dialogs -->
+        <!-- Edit Dialog -->
         <v-dialog v-model="editDialog" max-width="600px">
           <v-card>
             <v-card-title>Edit Staff</v-card-title>
             <v-card-text>
-              <v-text-field v-model="editStaff.name" label="Name"></v-text-field>
-              <v-text-field v-model="editStaff.gender" label="Gender"></v-text-field>
-              <v-text-field v-model="editStaff.contact_mobile" label="Contact"></v-text-field>
-              <v-text-field v-model="editStaff.subjects_taught" label="Subjects Taught"></v-text-field>
-              <v-text-field v-model="editStaff.classes_taught" label="Classes Taught"></v-text-field>
+              <v-text-field v-model="editStaff.name" label="Name" />
+              <v-text-field v-model="editStaff.gender" label="Gender" />
+              <v-text-field v-model="editStaff.contact_mobile" label="Contact" />
+              <v-text-field v-model="editStaff.subjects_taught" label="Subjects Taught" />
+              <v-text-field v-model="editStaff.classes_taught" label="Classes Taught" />
             </v-card-text>
             <v-card-actions>
               <v-btn color="blue-darken-1" text @click="editDialog = false">Cancel</v-btn>
@@ -77,6 +75,7 @@
           </v-card>
         </v-dialog>
 
+        <!-- Delete Dialog -->
         <v-dialog v-model="deleteDialog" max-width="600px">
           <v-card>
             <v-card-title>Confirm Delete</v-card-title>
@@ -94,13 +93,29 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { VSkeletonLoader } from 'vuetify/components';
 import { supabase } from '~/supabase'; // Adjust path based on your project structure
 
 const search = ref('');
-const items = ref([]);
-const paginationOptions = [2, 3];
+const items = ref([]); // Initialize as an array to avoid invalid prop warning
 const itemsPerPage = ref(2);
+
+// Lookups for dropdowns
+const genderLookUp = ['Male', 'Female', 'Others'];
+// const subjectLookup = ['Math', 'Language', 'Geography', 'Sociology', 'Economy', 'Physics', 'Chemistry', 'Biology'];
+const subjectLookups = ref([]);
+const classLookups = ref([]);
+// const classLookups = ['Class I', 'Class II', 'Class III', 'Class IV', 'Class V', 'Class VI', 'Class VII', 'Class VIII', 'Class IX', 'Class X', 'Class XI', 'Class XII'];
+
+// Table headers based on Supabase `staff` table
+const headers = [
+  { title: 'SL', value: 'id', key: 'id' },
+  { title: 'Name', value: 'name' },
+  { title: 'Gender', value: 'gender' },
+  { title: 'Contact', value: 'contact_mobile' },
+  { title: 'Subjects Taught', value: 'subjects_taught' },
+  { title: 'Classes Taught', value: 'classes_taught' },
+  { title: 'Actions', key: 'actions', sortable: false },
+];
 
 // Dialog states
 const insertDialog = ref(false);
@@ -112,25 +127,11 @@ const newStaff = ref({
   name: '',
   gender: '',
   contact_mobile: '',
-  subjects_taught: '',
-  classes_taught: ''
+  subjects_taught: [],
+  classes_taught: []
 });
 
-// Staff to edit/delete
-const editStaff = ref(null);
-const deleteStaffId = ref(null);
-
-// Headers based on Supabase `staff` table
-const headers = [
-  { title: 'Name', value: 'name' },
-  { title: 'Gender', value: 'gender' },
-  { title: 'Contact', value: 'contact_mobile' },
-  { title: 'Subjects Taught', value: 'subjects_taught' },
-  { title: 'Classes Taught', value: 'classes_taught' },
-  { title: 'Actions', key: 'actions', sortable: false },
-];
-
-// Fetch data from Supabase
+// Fetch staff data from Supabase
 async function fetchStaffs() {
   try {
     const { data, error } = await supabase
@@ -141,16 +142,75 @@ async function fetchStaffs() {
       throw new Error(error.message);
     }
 
-    items.value = data;
+    // Ensure items is updated with fetched data
+    items.value = data || [];
   } catch (err) {
     console.error('Error fetching staff data:', err);
   }
 }
 
+// Fetch subject lookups from Supabase
+async function fetchSubjectLookups() {
+  try {
+    const { data, error } = await supabase
+      .from('subject_lookup')
+      .select('*');
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Ensure classLookups is updated with fetched data
+    subjectLookups.value = data.map(item => item.subject_name) || [];
+  } catch (err) {
+    console.error('Error fetching class lookup data:', err);
+  }
+}
+
+
+// Fetch class lookups from Supabase
+async function fetchClassLookups() {
+  try {
+    const { data, error } = await supabase
+      .from('class_lookup')
+      .select('*');
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Ensure classLookups is updated with fetched data
+    classLookups.value = data.map(item => item.class_name) || [];
+  } catch (err) {
+    console.error('Error fetching class lookup data:', err);
+  }
+}
+// const classLookups = ref([]); // New variable to hold class lookups
+
+// async function fetchClassesLookups() {
+//   try {
+
+//     const { data, error } = await supabase
+//       .from('class_lookup')
+//       .select('*')
+
+
+//     if (error) {
+//       throw new Error(error.message);
+//     }
+
+//     // Assign fetched data to `classLookups`
+//     classLookups.value = data || [];
+//   } catch (err) {
+//     console.error('Error fetching class lookup data:', err);
+//   }
+// }
+
+
 // Insert new staff
 async function insertNewStaff() {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('staff')
       .insert([newStaff.value]);
 
@@ -168,7 +228,7 @@ async function insertNewStaff() {
 // Update staff
 async function updateStaff(staffId) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('staff')
       .update(editStaff.value)
       .eq('id', staffId);
@@ -187,7 +247,7 @@ async function updateStaff(staffId) {
 // Delete staff
 async function deleteStaff(staffId) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('staff')
       .delete()
       .eq('id', staffId);
@@ -203,14 +263,18 @@ async function deleteStaff(staffId) {
   }
 }
 
+// Staff to edit/delete
+const editStaff = ref(null);
+const deleteStaffId = ref(null);
+
 // Open dialogs
 function openInsertDialog() {
   newStaff.value = {
     name: '',
     gender: '',
     contact_mobile: '',
-    subjects_taught: '',
-    classes_taught: ''
+    subjects_taught: [],
+    classes_taught: []
   };
   insertDialog.value = true;
 }
@@ -227,44 +291,6 @@ function openDeleteDialog(item) {
 
 onMounted(() => {
   fetchStaffs();
+  fetchClassLookups(); // Fetch class lookups on mount
 });
 </script>
-
-// const items = [
-// {
-// id: 1,
-// firstName: 'John',
-// lastName: 'Doe',
-// designation: 'Mathematics Teacher',
-// subjectsTaught: 'Mathematics, Physics',
-// classesTaught: 'Secondary, Higher Secondary',
-// qualification: 'M.Sc., B.Ed.',
-// contact: '+91 9876543210',
-// typeOfAppointment: 'Regular',
-// dateOfJoining: '01/06/2015',
-// },
-// {
-// id: 2,
-// firstName: 'Jane',
-// lastName: 'Smith',
-// designation: 'English Teacher',
-// subjectsTaught: 'English, Literature',
-// classesTaught: 'Upper Primary, Secondary',
-// qualification: 'M.A., B.Ed.',
-// contact: '+91 9876543220',
-// typeOfAppointment: 'Contract',
-// dateOfJoining: '15/07/2018',
-// }
-// {
-// id: 3,
-// firstName: 'David',
-// lastName: 'Brown',
-// designation: 'Science Teacher',
-// subjectsTaught: 'Biology, Chemistry',
-// classesTaught: 'Secondary',
-// qualification: 'M.Sc., B.Ed.',
-// contact: '+91 9876543230',
-// typeOfAppointment: 'Part-Time',
-// dateOfJoining: '10/09/2020',
-// },
-// ]
