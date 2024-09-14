@@ -1,34 +1,30 @@
 <template>
-    <v-card>
-      <v-layout>
-        <v-app-bar color="secondary" prominent>
-          <v-app-bar-nav-icon
-            variant="text"
-            @click.stop="drawer = !drawer"
-          />
+  <v-card>
+    <v-layout>
+      <v-app-bar color="secondary" prominent>
+        <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer" />
 
-          <v-toolbar-title>
-            Student Database Management System
-          </v-toolbar-title>
+        <v-toolbar-title>
+          Student Database Management System
+        </v-toolbar-title>
 
-          <v-spacer/>
-  
-          <template v-if="$vuetify.display.mdAndUp">
-            <v-btn icon="mdi-magnify" variant="text"/>
-  
-            <v-btn icon="mdi-filter" variant="text"/>
-          </template>
-  
-          <v-btn icon="mdi-dots-vertical" variant="text"/>
-        </v-app-bar>
-  
-        <v-navigation-drawer
-          v-model="drawer"
-          :location="$vuetify.display.mobile ? 'bottom' : undefined"
-          temporary
-        >
+        <v-spacer />
+
+        <template v-if="$vuetify.display.mdAndUp">
+          <v-btn icon="mdi-magnify" variant="text" />
+
+          <v-btn icon="mdi-exit-run" variant="text" @click="logout" />
+
+          <!-- <v-btn icon="mdi-filter" variant="text" /> -->
+        </template>
+
+        <v-btn icon="mdi-dots-vertical" variant="text" />
+      </v-app-bar>
+
+      <v-navigation-drawer v-model="drawer" :location="$vuetify.display.mobile ? 'bottom' : undefined" temporary>
         <v-list>
-          <v-list-item prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg" subtitle="sandra_a88@gmail.com" title="Sandra Adams" />
+          <v-list-item prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg" subtitle="sandra_a88@gmail.com"
+            title="Sandra Adams" />
         </v-list>
         <v-divider />
         <v-list density="compact" nav>
@@ -42,45 +38,31 @@
           <v-list-item prepend-icon="mdi-archive" title="Inventory" @click="navigateTo('/inventory')" />
           <v-list-item prepend-icon="mdi-book-plus-multiple" title="Library" @click="navigateTo('/library')" />
         </v-list>
-        </v-navigation-drawer>
-  
-        <v-main style="height: 100vh">
-            <NuxtPage/>
-        </v-main>
-      </v-layout>
-    </v-card>
-  </template>
-  
-  <script>
-    export default {
-      data: () => ({
-        drawer: false,
-        group: null,
-        items: [
-          {
-            title: 'Foo',
-            value: 'foo',
-          },
-          {
-            title: 'Bar',
-            value: 'bar',
-          },
-          {
-            title: 'Fizz',
-            value: 'fizz',
-          },
-          {
-            title: 'Buzz',
-            value: 'buzz',
-          },
-        ],
-      }),
-  
-      watch: {
-        group() {
-          this.drawer = false
-        },
-      },
-    }
-  </script>
-  
+      </v-navigation-drawer>
+
+
+      <!-- 100vh for fix height but impacts the table scrolling -->
+      <v-main>
+        <NuxtPage />
+      </v-main>
+    </v-layout>
+  </v-card>
+</template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+
+const user = useCookie('user')
+const router = useRouter()
+
+const drawer = ref(false)
+
+const navigateTo = (path) => {
+  router.push(path)
+}
+
+const logout = () => {
+  user.value = null // clear user cookie or state
+  router.push('/') // redirect to login or home page
+}
+</script>
