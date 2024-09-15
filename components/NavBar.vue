@@ -36,8 +36,9 @@
   </template>
 <script setup>
 import { useRouter } from 'vue-router'
-
 const user = useCookie<{ name: string }>('user')
+// const logins = useCookie<number>('logins')
+
 const router = useRouter()
 
 const logout = () => {

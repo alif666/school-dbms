@@ -13,7 +13,7 @@ const login = async () => {
   const data = await authenticate({email:name.value,password:password.value});
   if(data.length>0){
     user.value = { name: name.value }
-    router.push('/dashboard');
+    router.push('/');
 
   }else{
     errorMsg.value = "Wrong Username or Password";
@@ -22,16 +22,16 @@ const login = async () => {
   
 }
 
-const logout = () => {
-  user.value = null
-}
+// const logout = () => {
+//   user.value = null
+// }
 </script>
 
 <template>
   <NuxtExample class="h-50" dir="advanced/use-cookie">
     
     <template v-if="user">
-        <NuxtPage :logout="logout"/>
+        <NuxtPage/>
     </template>
     <template v-else>
       <!--Login form-->

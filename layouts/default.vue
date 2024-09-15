@@ -13,7 +13,7 @@
         <template v-if="$vuetify.display.mdAndUp">
           <v-btn icon="mdi-magnify" variant="text" />
 
-          <v-btn icon="mdi-exit-run" variant="text" @click="logout" />
+          <v-btn icon="mdi-exit-run" variant="text" @click="userLogout" />
 
           <!-- <v-btn icon="mdi-filter" variant="text" /> -->
         </template>
@@ -51,8 +51,9 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+// const user = useCookie<{ name: string }>('user')
+// const logins = useCookie<number>('logins')
 
-const user = useCookie('user')
 const router = useRouter()
 
 const drawer = ref(false)
@@ -61,8 +62,13 @@ const navigateTo = (path) => {
   router.push(path)
 }
 
-const logout = () => {
-  user.value = null // clear user cookie or state
-  router.push('/') // redirect to login or home page
+
+
+const user = useCookie('user');
+
+const userLogout=()=>{
+  user.value= null;
+  router.push("/");
 }
+
 </script>
