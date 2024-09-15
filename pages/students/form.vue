@@ -87,12 +87,7 @@
                     <v-expansion-panel>
                         <v-expansion-panel-title>4. Upload Photo</v-expansion-panel-title>
                         <v-expansion-panel-text>
-                            <v-card>
-                                <v-card-text>
-                                    <dropzone :accepted-files="['image']" dropzone-class-name="dropzone-box"
-                                        :multiple="false" @added-file="onFileAdd" />
-                                </v-card-text>
-                            </v-card>
+                            Some Content
 
                         </v-expansion-panel-text>
                     </v-expansion-panel>
@@ -107,18 +102,11 @@
 </template>
 
 <script>
-import {ref} from 'vue';
+
 export default {
     
 
     data: () => ({
-        uploadedImage:ref([]),
-        onFileAdd:()=>({
-            
-            // uploadedImage.value = file.file
-  
-
-        }),
         panel: [0, 1],
         student_name: '',
         student_name_rules: [
