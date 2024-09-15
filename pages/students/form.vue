@@ -69,6 +69,14 @@
                         <v-expansion-panel-text>
                             <v-text-field v-model="academic_year" label="Academic Year: 2022-23" />
                             <v-text-field v-model="udise_code" label="UDISE Code of School:" />
+                            <v-text-field v-model="admission_number" label="2.1 Admission Number in School:" />
+                            <v-container>
+                                <v-date-picker header="Admission Date" v-model="admission_date"
+                                    title="2.2 Present Class (DD/MM/YYYY):" />
+                                <v-select v-model="stream_opted" :items="streamOptedLookups"
+                                    label="2.3 Academic Stream Opted (For Higher Secondary): Art (1) / Science (2) / Commerce (3) / Vocational (4) / Other (5)" />
+
+                            </v-container>
                         </v-expansion-panel-text>
                     </v-expansion-panel>
 
@@ -77,8 +85,16 @@
                         <v-expansion-panel-text> Some content </v-expansion-panel-text>
                     </v-expansion-panel>
                     <v-expansion-panel>
-                        <v-expansion-panel-title>4. Declaration Panel</v-expansion-panel-title>
-                        <v-expansion-panel-text> Some content </v-expansion-panel-text>
+                        <v-expansion-panel-title>4. Upload Photo</v-expansion-panel-title>
+                        <v-expansion-panel-text>
+                            <v-card>
+                                <v-card-text>
+                                    <dropzone :accepted-files="['image']" dropzone-class-name="dropzone-box"
+                                        :multiple="false" @added-file="onFileAdd" />
+                                </v-card-text>
+                            </v-card>
+
+                        </v-expansion-panel-text>
                     </v-expansion-panel>
 
                 </v-expansion-panels>
@@ -91,10 +107,18 @@
 </template>
 
 <script>
+import {ref} from 'vue';
 export default {
+    
 
     data: () => ({
+        uploadedImage:ref([]),
+        onFileAdd:()=>({
+            
+            // uploadedImage.value = file.file
+  
 
+        }),
         panel: [0, 1],
         student_name: '',
         student_name_rules: [
@@ -123,6 +147,10 @@ export default {
         mother_tongue: '',
         social_category: null,
         socialCategoryLookUp: ['Capitalist Farmers', 'Rich Peasants', 'Middle Peasants', 'Marginal Peasants', 'Landless'],
+        stream_opted: null,
+        streamOptedLookups: ['Art', 'Science', 'Commerce', 'Vocational', 'Others'],
+
+
     }),
 }
 </script>

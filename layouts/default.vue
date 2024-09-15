@@ -28,7 +28,7 @@
         </v-list>
         <v-divider />
         <v-list density="compact" nav>
-          <v-list-item prepend-icon="mdi-account-multiple" title="Student" @click="navigateTo('/student')" />
+          <v-list-item prepend-icon="mdi-account-multiple" title="Student" @click="navigateTo('/students')" />
           <v-list-item prepend-icon="mdi-account-multiple" title="Staff" @click="navigateTo('/staff')" />
           <v-list-item prepend-icon="mdi-checkbox-marked" title="Attendance" @click="navigateTo('/attendance')" />
           <v-list-item prepend-icon="mdi-school" title="Grade" @click="navigateTo('/grade')" />
